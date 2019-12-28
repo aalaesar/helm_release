@@ -1,2 +1,14 @@
 ---
 # defaults file for helm_release
+hr_chart:
+  name: "" # chart's name
+  version: # chart's version
+  source:
+    type: # git | repo
+    name: # repo's name
+    location: # repo/git 's URL 
+    path: # path of the chart in a git repository (optionnal)
+hr_name: # the release's name
+hr_namespace: "" # namespace for the release
+hr_state: present # present | absent | purged
+hr_values: {}  # chart's custom values
