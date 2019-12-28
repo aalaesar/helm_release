@@ -1,3 +1,43 @@
 ---
 # tasks file for helm_release
+# verify parameters
 - include:  check_parameters.yml
+# gather release list
+- name: gather the list of managed releases
+  command: helm list -a --output json
+  changed_when: false
+  register: cmd_helm_releases
+- name: looks for the named release
+  set_fact:
+    cmd_releases_status: "{{(cmd_helm_releases.stdout | from_json)| json_query(json_query_request)| lower}}"
+  vars:
+    json_query_request: "Releases[?Name == '{{hr_name}}'].Status"
+
+  # create the release
+- debug:
+    msg: "pas trouvé, à créer"
+  when:
+    - hr_state == 'present'
+    - ('deployed' not in cmd_releases_status)
+
+  # check/update the release
+- debug:
+    msg: "trouvé , à contrôler"
+  when:
+    - hr_state == 'present'
+    - ('deployed' in cmd_releases_status)
+
+  # remove/purge the release
+- debug:
+    msg: "trouvé !, à enlever"
+  when:
+    - hr_state in ['absent', 'purged']
+    - ('deployed' in cmd_releases_status)
+
+  # nothing to do
+- name: nothing to do
+  debug:
+    msg: "Release {{hr_name}} not found. Nothing to do."
+  when:
+    - hr_state in ['absent', 'purged']
+    - ('deployed' not in cmd_releases_status)
