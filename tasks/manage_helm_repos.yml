@@ -1,0 +1,38 @@
+---
+- name: list installed charts repositories
+  command: helm repo list --output json
+  changed_when: false
+  register: cmd_repo_list
+
+- debug:
+    var: cmd_repo_list
+
+- name: looks for the chart's repository
+  set_fact:
+    # the repo's name should be uniq, json_query return a list
+    cmd_repo_status: "{{ (cmd_repo_list.stdout | from_json) | json_query(json_query_request)}}"
+  vars:
+    json_query_request: "[?Name == '{{hr_chart.source.name}}']"
+  
+- debug:
+    var: cmd_repo_status
+  
+- name: the repo's URL is correct
+  assert:
+    that:
+      - (cmd_repo_status | first).URL == hr_chart.source.location
+    fail_msg: "The URL of repo {{hr_chart.source.name}} is not {{hr_chart.source.location}}!"
+  when:
+    - not hr_chart.source.update_url|d(false)
+    - cmd_repo_status|length > 0
+
+- block:
+  - name: add/update the helm repository
+    command: "helm repo add {{hr_chart.source.name}} {{hr_chart.source.location}}"
+  - name: update Helm's Cache
+    command: "helm repo update"
+  when:
+    - >
+      (cmd_repo_status|length == 0) or
+      ((cmd_repo_status[0].URL != hr_chart.source.location) and
+      (hr_chart.source.update_url|d(false)))
