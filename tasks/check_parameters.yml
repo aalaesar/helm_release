@@ -1,0 +1,55 @@
+- name: check parameters
+  assert:
+    quiet: true
+    that:
+      - hr_state in ["present", "absent", "purged"]
+    fail_msg: "Invalid value for hr_state ({{hr_state}}). Accepted values: ['present', 'absent', 'purged']"
+
+- name: check parameters
+  assert:
+    quiet: true
+    that:
+      - hr_chart.source.type in ["repo", "git"]
+    fail_msg: "Invalid value for hr_chart.source.type ({{hr_chart.source.type}}). Accepted values: ['repo', 'git']"
+  when:
+    - hr_chart.source.type|d(false)
+
+- name: check parameters
+  assert:
+    quiet: true
+    that:
+      - hr_chart.name | d(false)
+      - hr_name | d(false)
+    fail_msg: "The role requires at least a chart name and a release name to install a release"
+  when:
+    - hr_state == "present"
+
+- name: check parameters
+  assert:
+    quiet: true
+    that:
+      - hr_chart.source.location | d(false)
+    fail_msg: "The role requires at least a git repo URL to install a release using a repo"
+  when:
+    - hr_state == "present"
+    - (hr_chart.source.type|d(false)) == "git"
+
+- name: check parameters
+  assert:
+    quiet: true
+    that:
+      - hr_chart.source.name | d(false)
+      - hr_chart.source.location | d(false)
+    fail_msg: "The role requires at least a repo name and a repo URL to install a release using a repo"
+  when:
+    - hr_state == "present"
+    - (hr_chart.source.type|d(false)) == "repo"
+
+- name: check parameters
+  assert:
+    quiet: true
+    that:
+      - hr_name | d(false)
+    fail_msg: "The role requires at least a release name to remove or purge a release "
+  when:
+    - hr_state in ["absent", "purged"]

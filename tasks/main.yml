@@ -1,2 +1,3 @@
 ---
 # tasks file for helm_release
+- include:  check_parameters.yml
