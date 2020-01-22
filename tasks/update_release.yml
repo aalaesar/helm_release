@@ -24,6 +24,13 @@
           - "{{ '--reuse-values' if hr_reuse_values |d(false) else '' }}"
           - "{{ hr_global_flags| join(' ')}}"
           - "--output json"
+      register: helm_upgrade_result
+    - name: rapport d'installation
+      debug:
+        msg: "{{ (helm_upgrade_result.stdout | from_json).info.status[item].split('\n') }}"
+      loop:
+        - notes
+        - resources
   always:
     - name: cleanup custom values on the helm host
       copy:
