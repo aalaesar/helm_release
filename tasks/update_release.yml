@@ -1,0 +1,32 @@
+---
+- include: get_release_facts.yml
+- assert:
+    that:
+      - hr_namespace == found_release_facts.namespace
+    fail_msg: "Error. A deployed release can't have its namespace changed"
+- block:
+    - name: custom values are copied on the helm host
+      copy:
+        path: "/tmp/helm_release_{{ hr_name }}_values.yml"
+        content: "{{ hr_values | to_nice_yaml }}"
+    - name: the release is upgraded
+      command: "helm upgrade {{ hr_name }} {{ hr_chart.name }} {{ cmd_options | join(' ') }}"
+      vars:
+        cmd_options:
+          - "{{ '--repo ' ~ hr_chart.source.name if (hr_chart.source.name|d(false)| bool) else '' }}"
+          # do not change used chart version unless asked for upgrade
+          # use hr_chart.version or latest available version found
+          - "{{ '--version ' ~ found_release_facts.chart.version if (hr_state != 'upgraded') else hr_chart.version|d(chart_versions_list|first) }}"
+          - "--values /tmp/helm_release_{{ hr_name }}_values.yml"
+          - "{{ '--reuse-values' if hr_reuse_values |d(false) else '' }}"
+          - "{{ hr_global_flags| join(' ')}}"
+          - "--output json"
+  always:
+    - name: cleanup custom values on the helm host
+      copy:
+        path: "/tmp/helm_release_{{ hr_name }}_values.yml"
+        state: absent
+  when: >
+    (hr_state == 'upgraded' and found_release_facts.chart.version is version(hr_chart.version|d(chart_versions_list|first), '<'))
+    or
+    ((found_release_facts.found_values | to_nice_json) != (hr_values | to_nice_json))
