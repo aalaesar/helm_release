@@ -17,7 +17,7 @@
       - (cmd_repo_status | first).URL == hr_chart.source.location
     fail_msg: "The URL of repo {{hr_chart.source.name}} is not {{hr_chart.source.location}}!"
   when:
-    - not hr_chart.source.update_url|d(false)
+    - not hr_chart.source.update_url|d(hr_reuse_values)
     - cmd_repo_status|length > 0
 
 - block:
@@ -28,4 +28,4 @@
   when: >
     (cmd_repo_status|length == 0) or
     ((cmd_repo_status[0].URL != hr_chart.source.location) and
-      (hr_chart.source.update_url|d(false)))
+    (hr_chart.source.update_url|d(hr_reuse_values)))

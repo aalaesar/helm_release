@@ -10,9 +10,10 @@ hr_chart:
     name: "" # repo's name
     location: "" # repo/git 's URL 
     path: "" # path of the chart in a git repository (optionnal)
-    update_url: false # update the repo's URL if the URL doesn't match
+    update_url: "{{ hr_reuse_values }}" # update the repo's URL if the URL doesn't match
 hr_name: "" # the release's name
 hr_namespace: "" # namespace for the release
 hr_state: present # present | absent | purged | upgraded
 hr_values: {}  # chart's custom values
+hr_reuse_values: false  # merge new value with existing values from an existing release
 hr_global_flags: [] # list of global flags supported by helm
