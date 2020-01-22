@@ -1,0 +1,19 @@
+---
+- block:
+  - name: custom values are copied on the helm host
+    copy:
+        dest: "/tmp/helm_release_{{ hr_name }}_values.yml"
+        content: "{{ hr_values|to_yaml }}"
+  - name: "the release is deployed"
+    command: "helm install {{ hr_chart.source.name ~ '/' if hr_chart.source.name|d(false)|bool }}{{ hr_chart.name }} {{ cmd_options }}"
+    vars:
+      cmd_options:
+        - "{{ '--version ' ~ hr_chart.version if hr_chart.version|d(false)|bool else '' }}"
+        - "{{ '--_namespace ' ~ hr_namespace if hr_namespace|d(false)|bool else '' }}"
+        - "{{ '--values ' ~ '/tmp/helm_release_'~hr_name~'_values.yml' if hr_values|d(false)|bool else '' }}"
+        - "{{ hr_global_flags| join(' ')}}"
+  always:
+    - name: cleanup custom values on the helm host
+      copy:
+        path: "/tmp/helm_release_{{ hr_name }}_values.yml"
+        state: absent
