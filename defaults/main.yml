@@ -2,7 +2,9 @@
 # defaults file for helm_release
 hr_chart:
   name: "" # chart's name
-  version: "" # chart's version. By default, latest version of the chart available
+  version: "" # chart's expected version.
+              # By default, helm installs the latest version for first install
+              # keep to found version for values updates unless hr_state is upgraded
   source:
     type: "" # git | repo
     name: "" # repo's name
@@ -11,5 +13,5 @@ hr_chart:
     update_url: false # update the repo's URL if the URL doesn't match
 hr_name: "" # the release's name
 hr_namespace: "" # namespace for the release
-hr_state: present # present | absent | purged
+hr_state: present # present | absent | purged | upgraded
 hr_values: {}  # chart's custom values
