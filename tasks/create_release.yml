@@ -3,7 +3,7 @@
   - name: custom values are copied on the helm host
     copy:
         dest: "/tmp/helm_release_{{ hr_name }}_values.yml"
-        content: "{{ hr_values|to_yaml }}"
+        content: "{{ hr_values|to_nice_yaml }}"
   - name: "the release is deployed"
     command: "helm install {{ hr_chart.source.name ~ '/' if hr_chart.source.name|d(false)|bool }}{{ hr_chart.name }} {{ cmd_options }}"
     vars:

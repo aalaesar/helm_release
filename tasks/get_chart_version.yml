@@ -13,9 +13,9 @@
 - block: 
   - assert:
       that:
-        - hm_chart.version in chart_versions_list
-      fail_msg: "{{ hm_chart.version }} not found in the chart's available versions"
+        - hr_chart.version in chart_versions_list
+      fail_msg: "{{ hr_chart.version }} not found in the chart's available versions"
     when:
-      - (hm_chart.version|d(false)|bool)
+      - (hr_chart.version|d(false))
   vars:
     chart_versions_list: "{{ (cmd_chart_versions.stdout|from_json)|json_query('[].Version')}}"

@@ -4,11 +4,14 @@
     that:
       - hr_namespace == found_release_facts.namespace
     fail_msg: "Error. A deployed release can't have its namespace changed"
+  when: hr_namespace|d(false)
 - block:
     - name: custom values are copied on the helm host
       copy:
         path: "/tmp/helm_release_{{ hr_name }}_values.yml"
         content: "{{ hr_values | to_nice_yaml }}"
+      when:
+        - hr_values |d(false)
     - name: the release is upgraded
       command: "helm upgrade {{ hr_name }} {{ hr_chart.name }} {{ cmd_options | join(' ') }}"
       vars:
