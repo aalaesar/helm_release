@@ -15,3 +15,4 @@ hr_name: "" # the release's name
 hr_namespace: "" # namespace for the release
 hr_state: present # present | absent | purged | upgraded
 hr_values: {}  # chart's custom values
+hr_global_flags: [] # list of global flags supported by helm

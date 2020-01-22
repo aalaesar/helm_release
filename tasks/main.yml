@@ -4,7 +4,7 @@
 - include:  check_parameters.yml
 # gather release list
 - name: gather the list of managed releases
-  command: helm list -a --output json
+  command: "helm list -a --output json {{ hr_global_flags| join(' ')}}"
   changed_when: false
   register: cmd_helm_releases
 - name: looks for the named release
