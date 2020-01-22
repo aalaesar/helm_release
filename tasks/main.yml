@@ -13,27 +13,30 @@
   vars:
     json_query_request: "Releases[?Name == '{{hr_name}}'].Status"
 
-  # create the release
 - block:
-    - debug:
-        msg: "pas trouvé, à créer"
-    - include: manage_helm_chart.yml
-  when:
-    - hr_state == 'present'
-    - ('deployed' not in cmd_releases_status)
+  - include: manage_helm_repos.yml
+    when: 
+      - hr_chart.source.type == "repo"
 
+  - include: get_chart_version.yml
+  # create the release
+  - include: create_release.yml
+    when: 
+      - ('deployed' not in cmd_releases_status)
   # check/update the release
-- block:
-    - debug:
-        msg: "trouvé , à contrôler"
-    - include: manage_helm_chart.yml
+  - include: update_release.yml
+    when:
+      - ('deployed' in cmd_releases_status)
   when:
-    - hr_state == 'present'
-    - ('deployed' in cmd_releases_status)
+    - hr_state in ['present', 'upgraded']
+
+
 
   # remove/purge the release
-- debug:
-    msg: "trouvé !, à enlever"
+- block:
+    - debug:
+        msg: "trouvé !, à enlever"
+    - include: remove_release.yml
   when:
     - hr_state in ['absent', 'purged']
     - ('deployed' in cmd_releases_status)
