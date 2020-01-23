@@ -14,7 +14,7 @@
       when:
         - hr_values|d(false)
     - name: the release is upgraded
-      command: "helm upgrade {{ hr_name }} {{ hr_chart.name }} {{ cmd_options | join(' ') }}"
+      command: "helm upgrade {{ hr_name }} {{ (hr_chart.source.name ~ '/') if (hr_chart.source.name|d(false)) else '' }}{{ hr_chart.name }} {{ cmd_options | join(' ') }}"
       vars:
         cmd_options:
           - "{{ '--repo ' ~ hr_chart.source.name if (hr_chart.source.name|d(false)| bool) else '' }}"
