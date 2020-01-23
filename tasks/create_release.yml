@@ -6,6 +6,7 @@
         content: "{{ hr_values|to_nice_yaml }}"
     when:
       - hr_values |d(false)
+    changed_when: false # this task does not affect the system
   - name: "the release is deployed"
     command: "helm install {{ (hr_chart.source.name ~ '/') if (hr_chart.source.name|d(false)) else '' }}{{ hr_chart.name }} --name {{ hr_name }} {{ cmd_options | join(' ')}}"
     vars:
@@ -27,3 +28,4 @@
       file:
         path: "/tmp/helm_release_{{ hr_name }}_values.yml"
         state: absent
+      changed_when: false # this task does not affect the system

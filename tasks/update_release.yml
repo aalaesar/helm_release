@@ -8,10 +8,11 @@
 - block:
     - name: custom values are copied on the helm host
       copy:
-        path: "/tmp/helm_release_{{ hr_name }}_values.yml"
+        dest: "/tmp/helm_release_{{ hr_name }}_values.yml"
         content: "{{ hr_values | to_nice_yaml }}"
+      changed_when: false # this task does not affect the system
       when:
-        - hr_values |d(false)
+        - hr_values|d(false)
     - name: the release is upgraded
       command: "helm upgrade {{ hr_name }} {{ hr_chart.name }} {{ cmd_options | join(' ') }}"
       vars:
@@ -33,9 +34,10 @@
         - resources
   always:
     - name: cleanup custom values on the helm host
-      copy:
+      file:
         path: "/tmp/helm_release_{{ hr_name }}_values.yml"
         state: absent
+      changed_when: false # this task does not affect the system
   when: >
     (hr_state == 'upgraded' and found_release_facts.chart.version is version(hr_chart.version|d(chart_versions_list|first), '<'))
     or
