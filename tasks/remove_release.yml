@@ -1,0 +1,7 @@
+---
+- name: The Helm release is deleted
+  command: "helm delete {{ hr_name }} {{ cmd_options | join(' ') }}"
+  vars:
+    cmd_options:
+      - "{{ '--purge' if (hr_state|lower) == 'purged' else '' }}"
+      - "{{ hr_global_flags| join(' ') }}"
