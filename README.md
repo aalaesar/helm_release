@@ -1,38 +1,74 @@
-Role Name
+Helm Releases
 =========
 
-A brief description of the role goes here.
+Create, update, upgrade an delete Helm Charts using Ansible and the Helm CLI  
+This role aims to mimic the ansible helm module (not maintained for now)  
+and to be as much as idempotent as possible.  
+Feel free to report any issue !
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Helm 2.x installed and configured on the target host.  
+The role is not yet tested for Helm 3
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The role mimic a part of the module parameters, but with prefix
 
-Dependencies
-------------
+```yaml
+hr_chart:
+  name: "" # chart's name
+  version: "" # chart's expected version.
+              # By default, helm installs the latest version for first install
+              # keep to found version for values updates unless hr_state is upgraded
+  source:
+    type: "" # repo.
+             # git NOT SUPPORTED YET
+    name: "" # repo's name
+    path: "" # path of the chart in a git repository (optionnal)
+    update_url: "{{ hr_reuse_values }}" # update the repo's URL if the URL doesn't match
+hr_name: "" # the release's name
+hr_namespace: "" # namespace for the release
+hr_state: present # present | absent | purged | upgraded
+hr_values: {}  # chart's custom values
+               # If hr_state = present but the values are differents from an existing release, it will be updated with this values.
+hr_reuse_values: false  # merge new values with existing values from an existing release
+hr_global_flags: [] # list of global flags supported by the helm CLI
+```
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+    - hosts: helm_cli_host
+      tasks:
+         - name: Install cert-manager
+           include_role: 
+             name: aalaesar.helm_release
+      vars:
+        hr_name: cert-manager
+        hr_namespace: cert-manager
+        hr_chart:
+          version:
+          name: cert-manager
+          source:
+            type: repo
+            name: jetstack
+            location: "https://charts.jetstack.io"
+            # update_url: true
+        hr_state: present
+        hr_values: 
+          image:
+            tag: "v0.12.0"
+          extraArgs:
+            - "--dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53"
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```
 
 License
 -------
 
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+BSD 3

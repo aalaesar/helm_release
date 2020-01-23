@@ -10,7 +10,7 @@
     found_release_facts:
       name: "{{ cmd_releases_infos.Name }}"
       chart:
-        # this 2 may break :/ =>
+        # this 2 may break in helm 3 :/ =>
         name: "{{ (cmd_releases_infos.Chart).rsplit('-', 1)[0]}}"
         version: "{{ (cmd_releases_infos.Chart).split('-')|last }}"
       namespace: "{{ cmd_releases_infos.Namespace }}"
