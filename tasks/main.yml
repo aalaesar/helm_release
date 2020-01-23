@@ -14,15 +14,21 @@
     json_query_request: "Releases[?Name == '{{hr_name}}'].Status"
 
 - block:
+  # add /pass the helm repo configuration
   - include: manage_helm_repos.yml
     when: 
       - hr_chart.source.type == "repo"
 
   - include: get_chart_version.yml
   # create the release
+  - fail:
+      msg: "An older Helm release with the name '{{hr_name}}' has been found. You may need to purge this release before installing it"
+    when:
+      - ('deleted'  in cmd_releases_status)
   - include: create_release.yml
     when: 
       - ('deployed' not in cmd_releases_status)
+
   # check/update the release
   - include: update_release.yml
     when:
@@ -30,13 +36,8 @@
   when:
     - hr_state in ['present', 'upgraded']
 
-
-
   # remove/purge the release
-- block:
-    - debug:
-        msg: "trouvé !, à enlever"
-    - include: remove_release.yml
+- include: remove_release.yml
   when:
     - hr_state in ['absent', 'purged']
     - ('deployed' in cmd_releases_status)
@@ -44,7 +45,7 @@
   # nothing to do
 - name: nothing left to do
   debug:
-    msg: "Release {{hr_name}} not found. Nothing to do."
+    msg: "Helm release '{{hr_name}}' not found. Nothing to do."
   when:
     - hr_state in ['absent', 'purged']
     - ('deployed' not in cmd_releases_status)
