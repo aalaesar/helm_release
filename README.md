@@ -1,7 +1,7 @@
 Helm Releases
 =========
 
-Create, update, upgrade an delete Helm Charts using Ansible and the Helm CLI  
+Create, update, upgrade an delete Helm releases using Ansible and the Helm CLI  
 This role aims to mimic the ansible helm module (not maintained for now)  
 and to be as much as idempotent as possible.  
 Feel free to report any issue !
