@@ -1,6 +1,7 @@
 ---
 - name: list installed charts repositories
   command: "helm repo list --output json {{ hr_global_flags | join(' ') }}"
+  check_mode : no
   changed_when: false
   register: cmd_repo_list
 

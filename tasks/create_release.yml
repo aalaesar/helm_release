@@ -7,14 +7,17 @@
     when:
       - hr_values |d(false)
     changed_when: false # this task does not affect the system
+    check_mode: no
   - name: "the release is deployed"
     command: "helm install {{ (hr_chart.source.name ~ '/') if (hr_chart.source.name|d(false)) else '' }}{{ hr_chart.name }} --name {{ hr_name }} {{ cmd_options | join(' ')}}"
+    check_mode: no
     vars:
       cmd_options:
         - "{{ '--version ' ~ hr_chart.version if hr_chart.version|d(false) else '' }}"
         - "{{ '--namespace ' ~ hr_namespace if hr_namespace|d(false) else '' }}"
         - "{{ '--values ' ~ '/tmp/helm_release_'~hr_name~'_values.yml' if hr_values|d(false) else '' }}"
         - "{{ hr_global_flags| join(' ') }}"
+        - "{{ '--dry-run' if ansible_check_mode else '' }}"
         - "--output json"
     register: helm_install_result
   - name: rapport d'installation
@@ -29,3 +32,4 @@
         path: "/tmp/helm_release_{{ hr_name }}_values.yml"
         state: absent
       changed_when: false # this task does not affect the system
+      check_mode: no

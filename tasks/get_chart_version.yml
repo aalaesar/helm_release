@@ -1,6 +1,7 @@
 ---
 - name: list available versions for the chart
   command: "helm search {{ hr_chart.source.name |d('') }}/{{ hr_chart.name }} {{cmd_options | join(' ')}}"
+  check_mode: no
   changed_when: false
   failed_when: cmd_chart_versions.stdout == 'null'
   register: cmd_chart_versions

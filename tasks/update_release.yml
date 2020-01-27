@@ -7,6 +7,7 @@
   when: hr_namespace|d(false)
 - block:
     - name: custom values are copied on the helm host
+      check_mode: no
       copy:
         dest: "/tmp/helm_release_{{ hr_name }}_values.yml"
         content: "{{ hr_values | to_nice_yaml }}"
@@ -15,6 +16,7 @@
         - hr_values|d(false)
     - name: the release is upgraded
       command: "helm upgrade {{ hr_name }} {{ (hr_chart.source.name ~ '/') if (hr_chart.source.name|d(false)) else '' }}{{ hr_chart.name }} {{ cmd_options | join(' ') }}"
+      check_mode: no
       vars:
         cmd_options:
           - "{{ '--repo ' ~ hr_chart.source.name if (hr_chart.source.name|d(false)| bool) else '' }}"
@@ -24,6 +26,7 @@
           - "--values /tmp/helm_release_{{ hr_name }}_values.yml"
           - "{{ '--reuse-values' if hr_reuse_values |d(false) else '' }}"
           - "{{ hr_global_flags| join(' ')}}"
+          - "{{ '--dry-run' if ansible_check_mode else '' }}"
           - "--output json"
       register: helm_upgrade_result
     - name: rapport d'installation
@@ -38,6 +41,7 @@
         path: "/tmp/helm_release_{{ hr_name }}_values.yml"
         state: absent
       changed_when: false # this task does not affect the system
+      check_mode: no
   when: >
     (hr_state == 'upgraded' and found_release_facts.chart.version is version(hr_chart.version|d(chart_versions_list|first), '<'))
     or

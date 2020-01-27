@@ -2,6 +2,7 @@
 # gather facts about the current release
 - name: get the releases custom values
   command: "helm get values {{ hr_name }} --output json {{ hr_global_flags | join(' ') }}"
+  check_mode: no
   changed_when: false
   register: cmd_release_values
 
