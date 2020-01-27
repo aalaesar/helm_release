@@ -31,7 +31,7 @@
       register: helm_upgrade_result
     - name: rapport d'installation
       debug:
-        msg: "{{ (helm_upgrade_result.stdout | from_json).info.status[item].split('\n') }}"
+        msg: "{{ ((helm_upgrade_result.stdout | from_json).info.status[item]|d('No '~item)).split('\n') }}"
       loop:
         - notes
         - resources

@@ -18,7 +18,7 @@
   # add /pass the helm repo configuration
   - include: manage_helm_repos.yml
     when: 
-      - hr_chart.source.type == "repo"
+      - hr_chart.source.type|d(false) == "repo"
 
   - include: get_chart_version.yml
   # create the release
