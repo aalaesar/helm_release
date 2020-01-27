@@ -2,8 +2,8 @@
   assert:
     quiet: true
     that:
-      - hr_state in ["present", "absent", "purged"]
-    fail_msg: "Invalid value for hr_state ({{hr_state}}). Accepted values: ['present', 'absent', 'purged']"
+      - hr_state in ["present", "absent", "purged", 'upgraded']
+    fail_msg: "Invalid value for hr_state ({{hr_state}}). Accepted values: ['present', 'absent', 'purged', 'upgraded']"
 
 - name: check parameters
   assert:
