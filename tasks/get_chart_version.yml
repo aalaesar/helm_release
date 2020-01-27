@@ -11,12 +11,13 @@
       - "{{ hr_global_flags | join(' ') }}"
       - "--versions"
 
-- block: 
-  - assert:
-      that:
-        - hr_chart.version in chart_versions_list
-      fail_msg: "{{ hr_chart.version }} not found in the chart's available versions"
-    when:
-      - (hr_chart.version|d(false))
-  vars:
+- name: the list of version is known
+  set_fact:
     chart_versions_list: "{{ (cmd_chart_versions.stdout|from_json)|json_query('[].Version')}}"
+
+- assert:
+    that:
+      - hr_chart.version in chart_versions_list
+    fail_msg: "{{ hr_chart.version }} not found in the chart's available versions"
+  when:
+    - (hr_chart.version|d(false))

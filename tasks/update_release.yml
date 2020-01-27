@@ -22,7 +22,7 @@
           - "{{ '--repo ' ~ hr_chart.source.name if (hr_chart.source.name|d(false)| bool) else '' }}"
           # do not change used chart version unless asked for upgrade
           # use hr_chart.version or latest available version found
-          - "{{ '--version ' ~ found_release_facts.chart.version if (hr_state != 'upgraded') else hr_chart.version|d(chart_versions_list|first) }}"
+          - "{{ '--version ' ~ found_release_facts.chart.version if (hr_state != 'upgraded') else '--version '~(hr_chart.version|d(chart_versions_list|first)) }}"
           - "--values /tmp/helm_release_{{ hr_name }}_values.yml"
           - "{{ '--reuse-values' if hr_reuse_values |d(false) else '' }}"
           - "{{ hr_global_flags| join(' ')}}"
@@ -43,6 +43,6 @@
       changed_when: false # this task does not affect the system
       check_mode: no
   when: >
-    (hr_state == 'upgraded' and found_release_facts.chart.version is version(hr_chart.version|d(chart_versions_list|first), '<'))
+    ((hr_state == 'upgraded') and (found_release_facts.chart.version is version((hr_chart.version|d(chart_versions_list|first)), '<')))
     or
     ((found_release_facts.found_values | to_nice_json) != (hr_values | to_nice_json))
