@@ -26,6 +26,7 @@
     loop:
       - notes
       - resources
+    when: not ansible_check_mode
   always:
     - name: cleanup custom values on the helm host
       file:
