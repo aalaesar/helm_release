@@ -1,0 +1,28 @@
+---
+- name: check the helm binary exists
+  stat:
+    path: "{{ hr_helm_binary|d('') }}"
+  when: hr_helm_binary|d(false)
+
+- name: list shell available commands
+  when: not hr_helm_binary|d(false)
+  command: bash -c 'compgen -c'
+  changed_when: false
+  register: _cmd_avail
+
+- assert:
+    that:
+      - hr_helm_binary | select('match', 'helm')
+    fail_msg: "Error: helm can't be found on the host. Make sure it is in your PATH"
+
+- block:
+  - name: get the binary version
+    command: "{{ hr_helm_binary|d('helm') }} version --short"
+    register: _helm_version
+    changed_when: false
+
+  - name: detect helm major version
+    set_fact:
+      hr_helm_version: "{{ _helm_version.stdout| regex_replace('v([0-9]).*', '\\1') }}"
+  when:
+    - not (hr_helm_version |d(false))

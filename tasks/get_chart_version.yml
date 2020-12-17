@@ -1,11 +1,17 @@
 ---
 - name: list available versions for the chart
-  command: "helm search {{ hr_chart.source.name |d('') }}/{{ hr_chart.name }} {{cmd_options | join(' ')}}"
+  command: >-
+    {{ hr_helm_binary|d('helm') }}
+    search {{ helm_special[hr_helm_version] }} {{ hr_chart.source.name |d('') }}/{{ hr_chart.name }}
+    {{cmd_options | join(' ')}}
   check_mode: no
   changed_when: false
   failed_when: cmd_chart_versions.stdout == 'null'
   register: cmd_chart_versions
   vars:
+    helm_special:
+      '2': ''
+      '3': repo
     cmd_options:
       - "--output json "
       - "{{ hr_global_flags | join(' ') }}"
@@ -13,7 +19,7 @@
 
 - name: the list of version is known
   set_fact:
-    chart_versions_list: "{{ (cmd_chart_versions.stdout|from_json)|json_query('[].Version')}}"
+    chart_versions_list: "{{ (cmd_chart_versions.stdout|from_json)|json_query('[].version')}}"
 
 - assert:
     that:

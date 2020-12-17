@@ -15,7 +15,11 @@
       when:
         - hr_values|d(false)
     - name: the release is upgraded
-      command: "helm upgrade {{ hr_name }} {{ (hr_chart.source.name ~ '/') if (hr_chart.source.name|d(false)) else '' }}{{ hr_chart.name }} {{ cmd_options | join(' ') }}"
+      command: >-
+        {{ hr_helm_binary|d('helm') }}
+        upgrade {{ hr_name }}
+        {{ (hr_chart.source.name ~ '/') if (hr_chart.source.name|d(false)) else '' }}{{ hr_chart.name }}
+        {{ cmd_options | join(' ') }}
       check_mode: no
       vars:
         cmd_options:
@@ -28,6 +32,7 @@
           - "{{ hr_global_flags| join(' ')}}"
           - "{{ '--dry-run' if ansible_check_mode else '' }}"
           - "--output json"
+          - "{{ (hr_namespace != '') |ternary('-n '~ hr_namespace, '' ) }}"
       register: helm_upgrade_result
     - name: rapport d'installation
       debug:

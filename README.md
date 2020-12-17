@@ -28,6 +28,7 @@ hr_chart:
              # git NOT SUPPORTED YET
     name: "" # repo's name
     path: "" # path of the chart in a git repository (optionnal)
+    location: "" # the repository url
     update_url: "{{ hr_reuse_values }}" # update the repo's URL if the URL doesn't match
 hr_name: "" # the release's name
 hr_namespace: "" # namespace for the release

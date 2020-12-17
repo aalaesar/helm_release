@@ -1,19 +1,21 @@
 ---
 # tasks file for helm_release
 # verify parameters
-- include:  check_parameters.yml
+- include: check_parameters.yml
+
+# check helm and helm version
+- include: check_helm.yml
 # gather release list
 - name: gather the list of managed releases
-  command: "helm list -a --output json {{ hr_global_flags| join(' ')}}"
+  command: "{{ hr_helm_binary|d('helm') }} list -A --output json {{ hr_global_flags| join(' ')}}"
   check_mode: no
   changed_when: false
   register: cmd_helm_releases
 - name: looks for the named release
   set_fact:
-    cmd_releases_status: "{{(cmd_helm_releases.stdout | from_json)| json_query(json_query_request)| lower}}"
+    cmd_releases_status: "{{cmd_helm_releases.stdout| from_json | json_query(json_query_request)| lower}}"
   vars:
-    json_query_request: "Releases[?Name == '{{hr_name}}'].Status"
-
+    json_query_request: "[?name == '{{hr_name}}'].status"
 - block:
   # add /pass the helm repo configuration
   - include: manage_helm_repos.yml
@@ -29,11 +31,12 @@
   - include: create_release.yml
     when: 
       - ('deployed' not in cmd_releases_status)
+      - ('failed' not in cmd_releases_status)
 
   # check/update the release
   - include: update_release.yml
     when:
-      - ('deployed' in cmd_releases_status)
+      - ('deployed' in cmd_releases_status) or ('failed' in cmd_releases_status)
   when:
     - hr_state in ['present', 'upgraded']
 

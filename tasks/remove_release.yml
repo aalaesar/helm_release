@@ -1,6 +1,6 @@
 ---
 - name: The Helm release is deleted
-  command: "helm delete {{ hr_name }} {{ cmd_options | join(' ') }}"
+  command: "{{ hr_helm_binary|d('helm') }} delete {{ hr_name }} {{ cmd_options | join(' ') }}"
   check_mode: no
   vars:
     cmd_options:

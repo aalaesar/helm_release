@@ -1,5 +1,7 @@
 ---
 # defaults file for helm_release
+# absolute path to the helm binary
+# hr_helm_binary:
 hr_chart:
   name: "" # chart's name
   version: "" # chart's expected version.

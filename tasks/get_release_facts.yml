@@ -1,7 +1,11 @@
 ---
 # gather facts about the current release
 - name: get the releases custom values
-  command: "helm get values {{ hr_name }} --output json {{ hr_global_flags | join(' ') }}"
+  command: >-
+    {{ hr_helm_binary|d('helm') }}
+    {{ (hr_namespace != '') |ternary('-n '~ hr_namespace, '' ) }}
+    get values {{ hr_name }} --output json
+    {{ hr_global_flags | join(' ') }}
   check_mode: no
   changed_when: false
   register: cmd_release_values
@@ -9,13 +13,13 @@
 - name: set the release facts
   set_fact:
     found_release_facts:
-      name: "{{ cmd_releases_infos.Name }}"
+      name: "{{ cmd_releases_infos.name }}"
       chart:
         # this 2 may break in helm 3 :/ =>
-        name: "{{ (cmd_releases_infos.Chart).rsplit('-', 1)[0]}}"
-        version: "{{ (cmd_releases_infos.Chart).split('-')|last }}"
-      namespace: "{{ cmd_releases_infos.Namespace }}"
+        name: "{{ (cmd_releases_infos.chart).rsplit('-', 1)[0]}}"
+        version: "{{ (cmd_releases_infos.chart).split('-')|last }}"
+      namespace: "{{ cmd_releases_infos.namespace }}"
       found_values: "{{cmd_release_values.stdout | from_json}}"
   vars:
     cmd_releases_infos: "{{(cmd_helm_releases.stdout | from_json)| json_query(json_query_request)| first}}"
-    json_query_request: "Releases[?Name == '{{hr_name}}']"
+    json_query_request: "[?name == '{{hr_name}}']"

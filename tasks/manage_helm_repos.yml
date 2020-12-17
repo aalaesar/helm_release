@@ -1,21 +1,30 @@
 ---
 - name: list installed charts repositories
-  command: "helm repo list --output json {{ hr_global_flags | join(' ') }}"
-  check_mode : no
+  command: "{{ hr_helm_binary|d('helm') }} repo list --output json {{ hr_global_flags | join(' ') }}"
+  check_mode: no
   changed_when: false
   register: cmd_repo_list
+  failed_when:
+    # helm3: ignore error when starting from scratch
+    - not (cmd_repo_list.stderr | regex_search('no repositories to show'))
+    - cmd_repo_list.rc != 0
 
 - name: looks for the chart's repository
   set_fact:
     # the repo's name should be uniq, json_query return a list
-    cmd_repo_status: "{{ (cmd_repo_list.stdout | from_json) | json_query(json_query_request)}}"
+    cmd_repo_status: "{{ _curated_result | json_query(json_query_request[hr_helm_version]) }}"
   vars:
-    json_query_request: "[?Name == '{{hr_chart.source.name}}']"
-  
+    json_query_request:
+      '2': "[?Name == '{{hr_chart.source.name}}']"
+      '3': "[?name == '{{hr_chart.source.name}}']"
+    ## Helm3 fix: adjust empty result to be read by the from_json filter
+    # somehow the string is automaticaly converted into data
+    _curated_result: "{{ (cmd_repo_list.stdout == '') | ternary({}, cmd_repo_list.stdout ) }}"
+    
 - name: the repo's URL is correct
   assert:
     that:
-      - (cmd_repo_status | first).URL == hr_chart.source.location
+      - (cmd_repo_status | first).URL|d((cmd_repo_status | first).url) == hr_chart.source.location
     fail_msg: "The URL of repo {{hr_chart.source.name}} is not {{hr_chart.source.location}}!"
   when:
     - not hr_chart.source.update_url|d(hr_reuse_values)
@@ -23,10 +32,10 @@
 
 - block:
   - name: add/update the helm repository
-    command: "helm repo add {{hr_chart.source.name}} {{hr_chart.source.location}} {{ hr_global_flags | join(' ') }}"
+    command: "{{ hr_helm_binary|d('helm') }} repo add {{hr_chart.source.name}} {{hr_chart.source.location}} {{ hr_global_flags | join(' ') }}"
   - name: update Helm's Cache
-    command: "helm repo update {{ hr_global_flags | join(' ') }}"
+    command: "{{ hr_helm_binary|d('helm') }} repo update {{ hr_global_flags | join(' ') }}"
   when: >
     (cmd_repo_status|length == 0) or
-    ((cmd_repo_status[0].URL != hr_chart.source.location) and
+    ((cmd_repo_status[0].URL|d(cmd_repo_status[0].url) != hr_chart.source.location) and
     (hr_chart.source.update_url|d(hr_reuse_values)))
